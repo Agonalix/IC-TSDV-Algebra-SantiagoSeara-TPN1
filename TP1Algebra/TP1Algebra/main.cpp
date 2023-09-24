@@ -7,9 +7,12 @@
 
 using namespace std;
 
+//Chequea si dos lineas se estan tocando
 bool LineToLineCollision(Vector2 playerPos, Vector2 endlinePlayer, Vector2 startLine, Vector2 endLine);
+// chequea la direccion a la que esta una linea de un punto, izquierda, derecha o si esta encima.
 int direction(Vector2 a, Vector2 b, Vector2 c);
-bool onLine(Vector2 starLine, Vector2 endLine, Vector2 point);
+bool onLine(Vector2 startLine, Vector2 endLine, Vector2 point);
+// chequea si colisiona
 bool isInside(Vector2 player);
 
 namespace WindowsVars
@@ -18,16 +21,16 @@ namespace WindowsVars
 	extern const int SCREEN_HEIGHT = 600;
 }
 
-vector<Vector2> puntos; // Vector para almacenar las posiciones de los clics
-Player player;
+vector<Vector2> puntos; // Vector para almacenar las posiciones de los clics, funciona como un array de vector2, para la creacion de la figura
+Player player; // Creacion del jugador, es la pelota que se mueve
 
 void main()
 {
 	InitWindow(WindowsVars::SCREEN_WIDTH, WindowsVars::SCREEN_HEIGHT, "Generador de Figuras");
 	SetTargetFPS(60);
 
-	bool changingFigure = true;
-	bool isCollide = false;
+	bool changingFigure = true; // esta variable hace que cuando se apreta enter se deje de dibujar.
+	bool isCollide = false; // checkea si colisiona la pelota con la figura, para cambiar su color
 
 
 	playerInit(player);
@@ -54,12 +57,10 @@ void main()
 		if (isInside(player.position))
 		{
 			isCollide = true;
-			cout << "COLLISIONA" << endl;
 		}
 		else
 		{
 			isCollide = false;
-			cout << "NO COLLISIONA" << endl;
 		}
 
 		//DRAW
@@ -94,10 +95,10 @@ void main()
 
 bool LineToLineCollision(Vector2 playerPos, Vector2 endlinePlayer, Vector2 startLine, Vector2 endLine)
 {
-	int dir1 = direction(playerPos, endlinePlayer, startLine);
-	int dir2 = direction(playerPos, endlinePlayer, endLine);
-	int dir3 = direction(startLine, endLine, playerPos);
-	int dir4 = direction(startLine, endLine, endlinePlayer);
+	int dir1 = direction(playerPos, endlinePlayer, startLine); // se utiliza para conseguir el valor numerico entre la direccion de el punto inicial del jugador (centro de la pelota), la linea imaginaria y el inicio del vector.
+	int dir2 = direction(playerPos, endlinePlayer, endLine);// se utiliza para conseguir el valor numerico entre la direccion de el punto inicial del jugador (centro de la pelota), la linea imaginaria y el final del vector.
+	int dir3 = direction(startLine, endLine, playerPos); // se utiliza para conseguir el valor numerico entre la direccion de el punto inicial del vector, el punto final del vector(la linea) y la posicion del jugador (inicio del a linea imaginaria).
+	int dir4 = direction(startLine, endLine, endlinePlayer);// se utiliza para conseguir el valor numerico entre la direccion de el punto inicial del vector, el punto final del vector(la linea) y el final de la linea imaginaria.
 
 	if (dir1 != dir2 && dir3 != dir4)
 		return true;
@@ -123,7 +124,7 @@ bool LineToLineCollision(Vector2 playerPos, Vector2 endlinePlayer, Vector2 start
 
 int direction(Vector2 a, Vector2 b, Vector2 c)
 {
-	int val = (b.y - a.y) * (c.x - b.x) - (b.x - a.x) * (c.y - b.y);
+	int val = (b.y - a.y) * (c.x - b.x) - (b.x - a.x) * (c.y - b.y); // esto es un producto cruz
 
 	if (val == 0)
 		return 0;  // Colineales
@@ -132,13 +133,13 @@ int direction(Vector2 a, Vector2 b, Vector2 c)
 	return 1;      // Dirección horaria
 }
 
-bool onLine(Vector2 starLine, Vector2 endLine, Vector2 player)
+bool onLine(Vector2 startLine, Vector2 endLine, Vector2 player)
 {
 	// Comprueba si el punto p está en la línea l1
-	if (player.x <= max(starLine.x, endLine.x)
-		&& player.x >= min(starLine.x, endLine.x)
-		&& (player.y <= max(starLine.y, endLine.y)
-			&& player.y >= min(starLine.y, endLine.y)))
+	if (player.x <= max(startLine.x, endLine.x)
+		&& player.x >= min(startLine.x, endLine.x)
+		&& (player.y <= max(startLine.y, endLine.y)
+			&& player.y >= min(startLine.y, endLine.y)))
 		return true;
 
 	return false;
@@ -147,13 +148,13 @@ bool onLine(Vector2 starLine, Vector2 endLine, Vector2 player)
 bool isInside(Vector2 point)
 {
 	Vector2 startLine = { player.position.x, player.position.y };
-	Vector2 endLine = { 9999, player.position.y };
+	Vector2 endLine = { 9999, player.position.y }; // crea una linea imaginaria desde la posicion del jugador hasta la posicion 9999 del eje x, para chequear cuantas lineas del poligono tiene por delante
 
-	int counter = 0;
+	int counter = 0; // este contador es la cantidad de lineas por las que pasa la linea imaginaria
 
 	for (int i = 1; i < puntos.size(); i++)
 	{
-		Vector2 startLinePolygon = { puntos[i - 1].x , puntos[i - 1].y };
+		Vector2 startLinePolygon = { puntos[i - 1].x , puntos[i - 1].y }; // estas variables son el comienzo y el final de los vectores del poligono
 		Vector2 endLinePolygon = { puntos[i].x , puntos[i].y };
 
 		if (LineToLineCollision(startLinePolygon, endLinePolygon, startLine, endLine))
@@ -168,5 +169,5 @@ bool isInside(Vector2 point)
 
 	}
 
-	return counter & 1;
+	return counter % 2; //retorna resto de la division entre contador y 2, chequeando si es par o impar.
 }

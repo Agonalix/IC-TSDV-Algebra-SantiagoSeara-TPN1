@@ -10,5 +10,6 @@ struct Player
 };
 
 //FUNCTIONS
+// Hace que el jugador empiece en el punto (0;0)
 void playerInit(Player& player);
 void playerMove(Player& player);
